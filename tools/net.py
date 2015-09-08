@@ -86,6 +86,19 @@ def server_loop():
         client_thread = threading.Thread(target=client_handler, args=(client_socket,))
         client_thread.start()
 
+def run_command(command):
+    # Trim newline
+    command = command.rstrip()
+
+    # Run the command and get output
+    try:
+        output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
+    except:
+        output = "Failed to execute command.\r\n"
+
+    # Send the output back to the client
+    return output
+
 def main():
     global listen
     global port

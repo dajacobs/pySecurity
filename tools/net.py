@@ -31,6 +31,43 @@ def usage():
     print "echo 'ABCDEFGHI' | ./net.py -t 192.168.11.12 -p 135"
     sys.exit(0)
 
+def client_sender(buffer):
+    client = socket.socket(socket.AF_INET, socket.SO_STREAM)
+
+    try:
+        # Connect to target host
+        client.connect((target,port))
+
+        if len(buffer):
+            client.send(buffer)
+        while True:
+            # Wait for data
+            recv_len = 1
+            response = ""
+
+            while recv_len:
+                data     = client.recv(4096)
+                recv_len = len(data)
+                response += data
+
+                if recv_len < 4096:
+                    break
+
+            print response,
+
+            # Wait for input
+            buffer = raw_input("")
+            buffer += "\n"
+
+            # Send data
+            client.send(buffer)
+
+    except:
+        print "[*] Exception! Exiting."
+
+        # Tear down the connection
+        client.close()
+
 def main():
     global listen
     global port

@@ -32,8 +32,7 @@ def usage():
     sys.exit(0)
 
 def client_sender(buffer):
-    client = socket.socket(socket.AF_INET, socket.SO_STREAM)
-
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         # Connect to target host
         client.connect((target,port))
@@ -61,10 +60,8 @@ def client_sender(buffer):
 
             # Send data
             client.send(buffer)
-
     except:
         print "[*] Exception! Exiting."
-
         # Tear down the connection
         client.close()
 
@@ -99,6 +96,61 @@ def run_command(command):
     # Send the output back to the client
     return output
 
+def client_handler(client_socket):
+    global upload
+    global execute
+    global command
+
+    # Check for upload
+    if len(upload_destination):
+
+        # Read in all of the bytes and write to our destination
+        file_buffer = ""
+
+        # Keep reading data until none
+        while True:
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            else:
+                file_buffer += data
+
+        # Takes bytes and try to write them out
+        try:
+            file_descriptor = open(upload_destination, "wb")
+            file_descriptor.write(file_buffer)
+            file_descriptor.close()
+
+            # Acknowledge file was written out
+            client_socket.send("Successfully saved to file to %s\r\n" % upload_destination)
+        except:
+            client_socket.send("Failed to save file to %s\r\n" % upload_destination)
+
+    # Check for command execution
+            if len(execute):
+                # Run the command
+                output = run_command(execute)
+
+                client_socket.send(output)
+
+    # Listen to another loop if a command shell is requested
+                while True:
+                    # Show a simple prompt
+                    client_socket.send("<BHP:#> ")
+
+                        # Receive until we see a linefeed
+                        (enter key)
+
+                    cmd_buffer = ""
+                    while "\n" not in cmd_buffer:
+                        cmd_buffer += client_socket.recv(1024)
+
+                    # Send back the command output
+                    response = run_command(cmd_buffer)
+
+                    # Send back the response
+                    client_socket.send(response)
+
 def main():
     global listen
     global port
@@ -111,8 +163,7 @@ def main():
         usage()
     # Read commandline options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu",
-        ["help", "listen", "execute", "target", "port", "command", "upload"])
+        opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu", ["help", "listen", "execute", "target", "port", "command", "upload"])
     except getopt.GetoptError as err:
         print str(err)
         usage()

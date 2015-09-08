@@ -66,3 +66,21 @@ def main():
             port = int(a)
         else:
             assert False, "Unhandled Option"
+
+    # Listen or send data from stdin
+    if not listen and len(target) and port > 0:
+        # Read in the buffer from the commandline
+        # This will block, so send CTRL-D if not sending input
+        # to stdin
+        buffer = sys.stdin.read()
+
+        # Send data
+        client_sender(buffer)
+
+    # Listen and potentially upload things, execute commands,
+    # and drop a shell back depending on our command line
+    # options above
+    if listen:
+        server_loop()
+
+main()

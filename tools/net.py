@@ -127,29 +127,27 @@ def client_handler(client_socket):
             client_socket.send("Failed to save file to %s\r\n" % upload_destination)
 
     # Check for command execution
-            if len(execute):
-                # Run the command
-                output = run_command(execute)
+    if len(execute):
+        # Run the command
+        output = run_command(execute)
 
-                client_socket.send(output)
+        client_socket.send(output)
 
     # Listen to another loop if a command shell is requested
-                while True:
-                    # Show a simple prompt
-                    client_socket.send("<BHP:#> ")
+    if command:
+        while True:
+            # Show a simple prompt
+            client_socket.send("<BHP:#> ")
 
-                        # Receive until we see a linefeed
-                        (enter key)
+            cmd_buffer = ""
+            while "\n" not in cmd_buffer:
+                cmd_buffer += client_socket.recv(1024)
 
-                    cmd_buffer = ""
-                    while "\n" not in cmd_buffer:
-                        cmd_buffer += client_socket.recv(1024)
+            # Send back the command output
+            response = run_command(cmd_buffer)
 
-                    # Send back the command output
-                    response = run_command(cmd_buffer)
-
-                    # Send back the response
-                    client_socket.send(response)
+            # Send back the response
+            client_socket.send(response)
 
 def main():
     global listen

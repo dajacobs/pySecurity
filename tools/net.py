@@ -68,6 +68,24 @@ def client_sender(buffer):
         # Tear down the connection
         client.close()
 
+def server_loop():
+    global target
+
+    # If no target, listen on all interfaces
+    if not len(target):
+        target = "0.0.0.0"
+
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.blind((target,port))
+    server.listen(5)
+
+    while True:
+        client_socket, addr = server.accept()
+
+        # Thread to handle new client
+        client_thread = threading.Thread(target=client_handler, args=(client_socket,))
+        client_thread.start()
+
 def main():
     global listen
     global port

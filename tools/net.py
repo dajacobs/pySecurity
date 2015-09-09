@@ -5,13 +5,13 @@ import threading
 import subprocess
 
 # Global variables
-listen = False
-command = False
-upload = False
-execute = ""
-target = ""
+listen             = False
+command            = False
+upload             = False
+execute            = ""
+target             = ""
 upload_destination = ""
-port = 0
+port               = 0
 
 def usage():
     print "Net Tool"
@@ -73,7 +73,7 @@ def server_loop():
         target = "0.0.0.0"
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.blind((target,port))
+    server.bind((target,port))
     server.listen(5)
 
     while True:
@@ -199,5 +199,4 @@ def main():
     # options above
     if listen:
         server_loop()
-
-main()
+main()            

@@ -112,8 +112,8 @@ def client_sender(buffer):
 
             # Send data
             client.send(buffer)
-    except:
-        print "[*] Exception! Exiting."
+    except Exception as err:
+        print "[*] Exception! Exiting. %s" % err
         # Tear down the connection
         client.close()
 
@@ -125,7 +125,7 @@ def server_loop():
         target = "0.0.0.0"
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind((target,port))
+    server.bind((target, port))
     server.listen(5)
 
     while True:
@@ -142,7 +142,7 @@ def run_command(command):
     # Run the command and get output
     try:
         output = subprocess.check_output(command, stderr=subprocess.STDOUT, shell=True)
-    except:
+    except Exception as err:
         output = "Failed to execute command.\r\n"
 
     # Send the output back to the client
@@ -182,7 +182,6 @@ def client_handler(client_socket):
     if len(execute):
         # Run the command
         output = run_command(execute)
-
         client_socket.send(output)
 
     # Listen to another loop if a command shell is requested
@@ -195,6 +194,7 @@ def client_handler(client_socket):
             while "\n" not in cmd_buffer:
                 cmd_buffer += client_socket.recv(1024)
 
+            print "[*] Received command: %s" % cmd_buffer
             # Send back the command output
             response = run_command(cmd_buffer)
 

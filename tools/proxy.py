@@ -3,6 +3,31 @@ import sys
 import socket
 import threading
 
+def main():
+	if len(sys.argv[1:]) !=5:
+		print "Usage: ./proxy.py [localhost] [localport] [remotehost] [remoteport] [receive_first]"
+		print "Example: ./proxy.py 127.0.0.1 9000 10.12.132.1 9000 True"
+		sys.exit(0)
+
+		# Local listening parameters
+		local_host = sys.argv[1]
+		local_port = int(sys.argv[2])
+
+		# Remote target
+		remote_host = sys.argv[3]
+		remote_port = int(sys.argv[4])
+
+		# Connect proxy and receive data before sending to remote host
+		receive_first = sys.argv[5]
+
+		if "True" in receive_first:
+			receive_first = True
+		else:
+			receive_first = False
+
+		# Start listening socket
+		server_loop(local_host, local_port, remote_host, remote_port, receive_first)	
+
 def server_loop(local_host, local_port, remote_host, remote_port, receive_first):
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -26,3 +51,5 @@ def server_loop(local_host, local_port, remote_host, remote_port, receive_first)
 		proxy_thread = threading.Thread(target=proxy_handler, args=(client_socket, remote_host, remote_port, receive_first))
 
 		proxy_thread.start()
+
+main()		

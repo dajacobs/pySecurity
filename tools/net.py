@@ -21,7 +21,6 @@ def usage():
     print "-e --execute=file_to_run - execute the given file upon receiving a connection"
     print "-c --command             - initialize a command shell"
     print "-u --upload=destination  - upon receiving connection, upload a file and write to [destination]"
-
     print
     print
     print "Examples: "
@@ -31,11 +30,62 @@ def usage():
     print "echo 'ABCDEFGHI' | ./net.py -t 192.168.11.12 -p 135"
     sys.exit(0)
 
+def main():
+    global listen
+    global port
+    global execute
+    global command
+    global upload_destination
+    global target
+
+    if not len(sys.argv[1:]):
+        usage()
+    # Read commandline options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu:", ["help", "listen", "execute", "target", "port", "command", "upload"])
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+
+    for o,a in opts:
+        if o in ("-h", "--help"):
+            usage()
+        elif o in ("-l", "--listen"):
+            listen = True
+        elif o in ("-e", "--execute"):
+            execute = a
+        elif o in ("-c", "--commandshell"):
+            command = True
+        elif o in ("-u", "--upload"):
+            upload_destination = a
+        elif o in ("-t", "--target"):
+            target = a
+        elif o in ("-p", "--port"):
+            port = int(a)
+        else:
+            assert False, "Unhandled Option"
+
+    # Listen or send data from stdin
+    if not listen and len(target) and port > 0:
+        # Read in the buffer from the commandline
+        # This will block, so send CTRL-D if not sending input
+        # to stdin
+        buffer = sys.stdin.read()
+
+        # Send data
+        client_sender(buffer)
+
+    # Listen and potentially upload things, execute commands,
+    # and drop a shell back depending on our command line
+    # options above
+    if listen:
+        server_loop()
+
 def client_sender(buffer):
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         # Connect to target host
-        client.connect((target,port))
+        client.connect((target, port))
 
         if len(buffer):
             client.send(buffer)
@@ -56,7 +106,9 @@ def client_sender(buffer):
 
             # Wait for input
             buffer = raw_input("")
-            buffer += "\n"
+            buffer += "\r\n"
+
+            print "[*] Sending: '%s'" % buffer
 
             # Send data
             client.send(buffer)
@@ -147,56 +199,5 @@ def client_handler(client_socket):
             response = run_command(cmd_buffer)
 
             # Send back the response
-            client_socket.send(response)
-
-def main():
-    global listen
-    global port
-    global execute
-    global command
-    global upload_destination
-    global target
-
-    if not len(sys.argv[1:]):
-        usage()
-    # Read commandline options
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "hle:t:p:cu", ["help", "listen", "execute", "target", "port", "command", "upload"])
-    except getopt.GetoptError as err:
-        print str(err)
-        usage()
-
-    for o,a in opts:
-        if o in ("-h", "--help"):
-            usage()
-        elif o in ("-l", "--listen"):
-            listen = True
-        elif o in ("-e", "--execute"):
-            execute = a
-        elif o in ("-c", "--commandshell"):
-            command = True
-        elif o in ("-u", "--upload"):
-            upload_destination = a
-        elif o in ("-t", "--target"):
-            target = a
-        elif o in ("-p", "--port"):
-            port = int(a)
-        else:
-            assert False, "Unhandled Option"
-
-    # Listen or send data from stdin
-    if not listen and len(target) and port > 0:
-        # Read in the buffer from the commandline
-        # This will block, so send CTRL-D if not sending input
-        # to stdin
-        buffer = sys.stdin.read()
-
-        # Send data
-        client_sender(buffer)
-
-    # Listen and potentially upload things, execute commands,
-    # and drop a shell back depending on our command line
-    # options above
-    if listen:
-        server_loop()
+            client_socket.send(response)            
 main()            

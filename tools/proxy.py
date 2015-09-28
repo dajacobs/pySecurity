@@ -95,14 +95,30 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
 			print "[*] No more data. Closing connections."
 			break			
 
-		# Hexdumping function
-		def hexdump(src, length=16):
-			result = []
-			digits = 4 if isinstance(src, unicode) else 2
-			for i in xrange(0, len(src), length):
-				s = src[i:i+length]
-				hexa = b' '.join(["%0+X" % (digits, ord(x)) for x in s])
-				text = b''.join([x if 0x20 <= ord(x) < 0x7F else b'.' for x in s])
-				result.append(b"%04X %-*s %s" % (i, length*(digits + 1), hexa, text))
-			print b'\n'.join(result)
+# Hexdumping function
+def hexdump(src, length=16):
+	result = []
+	digits = 4 if isinstance(src, unicode) else 2
+	for i in xrange(0, len(src), length):
+		s = src[i:i+length]
+		hexa = b' '.join(["%0+X" % (digits, ord(x)) for x in s])
+		text = b''.join([x if 0x20 <= ord(x) < 0x7F else b'.' for x in s])
+		result.append(b"%04X %-*s %s" % (i, length*(digits + 1), hexa, text))
+	print b'\n'.join(result)
+
+def receive_from(connection):
+	buffer = ""
+
+	# Set a two second timeout; depending upon target, may need to adjust
+	connection.settimeout(2)
+		try:
+			# Read into buffer until no more data or timeout
+			while True:
+				data = connection.recv(4096)
+				if not data:
+					break
+				buffer += data
+		except 
+			pass
+		return buffer	
 main()		

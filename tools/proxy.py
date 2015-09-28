@@ -67,8 +67,7 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
 
 		# Send data to locate client
 		if len(remote_buffer):
-			print "[<==] Sending %d bytes to localhost." % 
-			len(remote_buffer)
+			print "[<==] Sending %d bytes to localhost." % len(remote_buffer)
 			client_socket.send(remote_buffer)
 	# Loop and read from local, send to remote, and send to local rinse, wash, and repeat
 	while True:
@@ -76,8 +75,7 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
 		local_buffer = receive_from(client_socket)	
 
 		if len(local_buffer):
-			print "[==>] Received %d bytes from localhost." %
-			len(local_buffer)
+			print "[==>] Received %d bytes from localhost." % len(local_buffer)
 			hexdump(local_buffer)
 
 			# Send to response handler
@@ -111,16 +109,16 @@ def receive_from(connection):
 
 	# Set a two second timeout; depending upon target, may need to adjust
 	connection.settimeout(2)
-		try:
-			# Read into buffer until no more data or timeout
-			while True:
-				data = connection.recv(4096)
-				if not data:
-					break
-				buffer += data
-		except 
-			pass
-		return buffer	
+	try:
+		# Read into buffer until no more data or timeout
+		while True:
+			data = connection.recv(4096)
+			if not data:
+				break
+			buffer += data
+	except: 
+		pass
+	return buffer	
 # Modify any requests destined for remote host
 def request_handler(buffer):
 	# Packet modification

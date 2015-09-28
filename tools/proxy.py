@@ -52,4 +52,26 @@ def server_loop(local_host, local_port, remote_host, remote_port, receive_first)
 
 		proxy_thread.start()
 
+def proxy_handler(client_socket, remote_host, remote_port, receive_first):
+	# Connect to remote host
+	remote_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	remote_socket.Connect((remote_host, remote_port))
+
+	# Receive the data from the remote end
+	if receive_first:
+		remote_buffer = receive_from(remote_socket)
+		hexdump(remote_buffer)
+
+		# Send the data to our response handler
+		remote_buffer = response_handler(remote_buffer)
+
+		# Send data to locate client
+		if len(remote_buffer):
+			print "[<==] Sending %d bytes to localhost." % 
+			len(remote_buffer)
+			client_socket.send(remote_buffer)
+	# Loop and read from local, send to remote, and send to local rinse, wash, and repeat
+	while True:
+		# Read from the local host
+		local_buffer = receive_from(client_socket)				
 main()		

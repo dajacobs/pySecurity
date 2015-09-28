@@ -121,4 +121,12 @@ def receive_from(connection):
 		except 
 			pass
 		return buffer	
+# Modify any requests destined for remote host
+def request_handler(buffer):
+	# Packet modification
+	return buffer
+# Modify any requests destined for remote host	
+def response_handler(buffer):
+	# Packet modification
+	return buffer			
 main()		

@@ -73,5 +73,25 @@ def proxy_handler(client_socket, remote_host, remote_port, receive_first):
 	# Loop and read from local, send to remote, and send to local rinse, wash, and repeat
 	while True:
 		# Read from the local host
-		local_buffer = receive_from(client_socket)				
+		local_buffer = receive_from(client_socket)	
+
+		if len(local_buffer):
+			print "[==>] Received %d bytes from localhost." %
+			len(local_buffer)
+			hexdump(local_buffer)
+
+			# Send to response handler
+			remote_buffer = response_handler(remote_buffer)
+
+			# Send reponse to the local socket
+			client_socket.send(remote_buffer)
+
+			print "[<==] Sent to localhost."
+
+		# If no data on either side, close connections
+		if not len(local_buffer) or not len(remote_buffer):
+			client_socket.close()
+			remote_socket.close()
+			print "[*] No more data. Closing connections."
+			break			
 main()		

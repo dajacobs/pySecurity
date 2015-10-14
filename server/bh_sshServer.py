@@ -31,4 +31,17 @@ try:
 except Exception,e:
 	print '[-] Listen failed: ' + str(e)
 	sys.exit(1)
-print '[+] God a connection!'								
+print '[+] God a connection!'
+
+try:
+	bhSession = paramiko.Transport(client)
+	bhSession.add_server_key(host_key)
+	server = Server()
+	try:
+		bhSession.start_server(server=server)
+	except paramiko.SSHException, x:
+		print '[-] SSH negotiation failed.'
+	chan = bhSession.accept(20)
+	print '[+] Authenticated!'
+	print chan.recv(1024)
+	chan.send('Welcome to bh_ssh')

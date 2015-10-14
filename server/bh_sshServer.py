@@ -45,3 +45,23 @@ try:
 	print '[+] Authenticated!'
 	print chan.recv(1024)
 	chan.send('Welcome to bh_ssh')
+	while True:
+		try:
+			command = raw_input("Enter command: ").strip('\n')
+			if command != 'exit':
+				chan.send(command)
+				print chan.recv(1024) + '\n'
+			else:
+				chan.send('exit')
+				print 'exiting'
+				bhSession.close()
+				raise Exception('exit')
+		except KeyboardInterrupt:
+			bhSession.close()
+except Exception,e:
+	print '[-] Caught exception: ' + str(e)
+	try:
+		bhSession.close()
+	except:
+		pass
+	sys.exit(1)									

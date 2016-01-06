@@ -22,3 +22,12 @@ def main():
 	except KeyboardInterrupt:
 		print('C-c: Port forwarding stopped.')
 		sys.exit(0)			
+def reverse_forward_tunnel(server_port, remote_host, remote_port, transport):
+	transport.request_port_forward('', server_port)
+	while True:
+		chan = transport.accept(1000)
+		if chan is None:
+			continue
+		thr = threading.Thread(target=handler, args=(chan, remote_host, remote_port))
+		thr.setDaemon(True)
+		thr.start()

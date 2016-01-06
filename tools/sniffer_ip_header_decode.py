@@ -42,6 +42,14 @@ try:
 		raw_buffer = sniffer.recvfrom(65565)[0]
 		#create IP header from first 20 bytes of buffer
 		ip_header = IP(raw_buffer[0:20])
+
+		class ICMP(Structure):
+			_fields_ = [('type', c_ubyte), ('code', c_ubyte), ('checksum', c_ushort), ('unused', c_ushort), ('next_hop_mtu', c_ushort)]
+			def __new__(self, socket_buffer):
+				return self.from_buffer_copy(socket_buffer)
+			def __init__(self, socket_buffer):
+				pass
+
 		#print out protocol detected and hosts
 		print 'Protocol: %s %s -> %s' % (ip_header.protocol, ip_header.src_address, ip_header.dst_address)
 
@@ -49,4 +57,4 @@ try:
 except KeyboardInterrupt:
 	#if Windows, promiscuous mode off
 	if os.name == 'nt':
-		sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)			
+		sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_OFF)					

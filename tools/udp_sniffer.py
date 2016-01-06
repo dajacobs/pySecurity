@@ -19,7 +19,7 @@ sniffer.bind((host, 0))
 #IP header included in capture
 sniffer.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
 #IOCTL for Windows, promiscuous mode
-if os.name = 'nt':
+if os.name == 'nt':
 	sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
 
 #read single packet

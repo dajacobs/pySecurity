@@ -49,6 +49,9 @@ else:
 sniffer = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket_protocol)
 sniffer.bind((host, 0))
 sniffer.setsockopt(socket.IPPROTO_IP, socket.IP_HDRINCL, 1)
+#send packets
+t = threading.Thread(target=udp_sender, args=(subnet, check_message))
+t.start()
 
 if os.name == 'nt':					
 	sniffer.ioctl(socket.SIO_RCVALL, socket.RCVALL_ON)
@@ -58,6 +61,15 @@ try:
 		raw_buffer = sniffer.recvfrom(65565)[0]
 		#create IP header from first 20 bytes of buffer
 		ip_header = IP(raw_buffer[0:20])
+
+		print 'ICMP -> Type: %d Code: %d' % (icmp_header.type, icmp_header.code)
+		#check for TYPE 3 and CODE
+		if icmp_header.code == 3 and icmp_header.type == 3:
+			#make sure host is target subnet
+			if IPAddress(ip_header.src_address) in IPNetwork(subnet):
+				#make sure it's check_message
+				if raw_buffer[len(raw_buffer) - len(check_message)] == check_message:
+					print 'Host Up: %s' %ip_header.src_address
 
 		class ICMP(Structure):
 			_fields_ = [('type', c_ubyte), ('code', c_ubyte), ('checksum', c_ushort), ('unused', c_ushort), ('next_hop_mtu', c_ushort)]
@@ -70,7 +82,7 @@ try:
 		print 'Protocol: %s %s -> %s' % (ip_header.protocol, ip_header.src_address, ip_header.dst_address)
 
 		#if ICMP
-		if ip_header.protocol = 'ICMP':
+		if ip_header.protocol == 'ICMP':
 			#calculate where ICMP packet starts
 			offset = ip_header.ihl * 4
 			buf = raw_buffer[offset:offset + sizeof(ICMP)]
